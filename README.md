@@ -63,3 +63,20 @@ Both regression and classification models were explored.
 
 ### Conclusion
 The analysis reveals that while the data was successfully cleaned and prepared, the selected features and initial models struggled to accurately predict both `Purchase_Amount` and `Customer_Satisfaction`. The low accuracy scores suggest that either the relationship between the features and the target variables is complex, or that additional data features are needed to improve model performance.
+
+=====
+
+#### Figures from python script
+![Alt text for screen readers](assets/img001.png)
+========
+========
+![Alt text for screen readers](assets/img002.png)
+========
+========
+![Alt text for screen readers](assets/img003.png)
+========
+========
+![Alt text for screen readers](assets/img004.png)
+========
+========
+![Alt text for screen readers](assets/img005.png)
