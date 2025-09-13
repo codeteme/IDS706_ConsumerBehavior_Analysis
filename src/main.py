@@ -20,10 +20,8 @@ from sklearn.metrics import (
 
 plt.style.use("fivethirtyeight")
 
-# Loading Data
-
-def load_data() -> pd.DataFrame: 
-    data = pd.read_csv("../data/raw/Ecommerce_Consumer_Behavior_Analysis_Data.csv")
+def load_data(file_url) -> pd.DataFrame: 
+    data = pd.read_csv(file_url)
     return data
 
 def basic_data_analysis(data: pd.DataFrame): 
@@ -36,7 +34,6 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     # Data Cleaning
     # Looking at data.info() and checking against data, 'Purchase_Amount' could be converted to a float
     data["Purchase_Amount"] = data["Purchase_Amount"].str.replace("$", "").astype(float)
-    # TODO Use the below as test case
     assert data["Purchase_Amount"].dtype == "float64"
 
     z_scores = np.abs(stats.zscore(data.select_dtypes(include=np.number)))
@@ -71,7 +68,7 @@ def exploratory_data_analysis(data: pd.DataFrame) -> list[str]:
         sns.histplot(x=data[col], kde=True)
         plt.title(f"Distribution of {col}")
     plt.tight_layout()
-    # plt.show()
+    # plt.show() # Uncomment to display figure
 
     # Categorical feature counts
     string_cols = data.select_dtypes(include="object").columns.tolist()
@@ -81,44 +78,32 @@ def exploratory_data_analysis(data: pd.DataFrame) -> list[str]:
         sns.countplot(x=data[col])
         plt.title(f"Count of {col}")
     plt.tight_layout()
-    # plt.show()
+    # plt.show() # Uncomment to display figure
 
     # Correlation Heatmap for numerical features
     plt.figure(figsize=(10, 8))
     sns.heatmap(data[numeric_cols].corr(), annot=True, cmap="coolwarm", fmt=".2f")
     plt.title("Correlation Matrix of Numeric Features")
-    # plt.show()
+    # plt.show() # Uncomment to display figure
 
     return string_cols
 
-def data_transformation_feature_engineering(data: pd.DataFrame) -> pd.DataFrame:
-    # One-hot encode categorical features
-    cols_to_onehot = (
-        data[string_cols]
-        .drop(["Customer_ID", "Time_of_Purchase", "Location"], axis=1)
-        .columns.tolist()
-    )
-    data_encoded = pd.get_dummies(data, columns=cols_to_onehot, drop_first=True)
-    print("Categorical columns have been one-hot encoded.")
-
-    # Drop irrelevant columns
+def data_transformation_feature_engineering(data: pd.DataFrame, string_cols: list) -> pd.DataFrame:
+    cols_to_onehot = [c for c in string_cols if c not in ["Customer_ID", "Time_of_Purchase", "Location"]]
+    data_encoded = pd.get_dummies(data, columns=cols_to_onehot, drop_first=False)
     data_final = data_encoded.drop(["Customer_ID", "Location", "Time_of_Purchase"], axis=1)
-
     return data_final
 
 def regression_analysis(data: pd.DataFrame): 
     # Regression Analysis: Predicting Purchase_Amount
-
-    X_reg = data_final.drop("Purchase_Amount", axis=1)
-    y_reg = data_final["Purchase_Amount"]
+    X_reg = data.drop("Purchase_Amount", axis=1)
+    y_reg = data["Purchase_Amount"]
 
     # Scale numerical features (excluding the target)
     scaler = StandardScaler()
     X_reg_scaled = X_reg.copy()
     numeric_features_reg = X_reg_scaled.select_dtypes(include=np.number).columns.tolist()
-    X_reg_scaled[numeric_features_reg] = scaler.fit_transform(
-        X_reg_scaled[numeric_features_reg]
-    )
+    X_reg_scaled[numeric_features_reg] = scaler.fit_transform(X_reg_scaled[numeric_features_reg])
 
     # Split data
     X_train_reg, X_test_reg, y_train_reg, y_test_reg = train_test_split(
@@ -126,61 +111,53 @@ def regression_analysis(data: pd.DataFrame):
     )
     print("Data split into training and testing sets for regression.")
 
-    # Linear Regression Model
+    # Linear Regression
     reg = LinearRegression().fit(X_train_reg, y_train_reg)
     y_pred_reg_lin = reg.predict(X_test_reg)
     mse_lin = mean_squared_error(y_test_reg, y_pred_reg_lin)
     rmse_lin = np.sqrt(mse_lin)
-    print(
-        f"Linear Regression | MSE: {mse_lin:.2f}, RMSE: {rmse_lin:.2f}"
-    )
+    print(f"Linear Regression | MSE: {mse_lin:.2f}, RMSE: {rmse_lin:.2f}")
 
+    # Feature Importance plot
     importance = reg.coef_
     features = reg.feature_names_in_
-
     plt.figure(figsize=(8, 5))
     plt.barh(features, importance)
     plt.xlabel("Importance Score")
     plt.ylabel("Feature Importance")
-    # plt.show()
+    # plt.show() # Uncomment to display figure
 
-    # XGBoost Regression Model
+    # XGBoost Regression
     xgbreg = XGBRegressor(n_estimators=200, learning_rate=0.1, random_state=42)
     xgbreg.fit(X_train_reg, y_train_reg)
     y_pred_reg_xgb = xgbreg.predict(X_test_reg)
     mse_xgb = mean_squared_error(y_test_reg, y_pred_reg_xgb)
     rmse_xgb = np.sqrt(mse_xgb)
-    print(
-        f"XGBoost Regression | MSE: {mse_xgb:.2f}, RMSE: {rmse_xgb:.2f}"
-    )
+    print(f"XGBoost Regression | MSE: {mse_xgb:.2f}, RMSE: {rmse_xgb:.2f}")
 
+    # XGBoost feature importance plot
     xgb_importance = xgbreg.feature_importances_
     xgb_features = X_train_reg.columns
-
     plt.figure(figsize=(15, 10))
     plt.barh(xgb_features, xgb_importance)
     plt.xlabel("Importance Score")
     plt.ylabel("Feature Importance")
-    # plt.show()
+    # plt.show() # Uncomment to display figure
 
-    return 
+    return
 
 
 def classification_analysis(data: pd.DataFrame): 
     # Classification Analysis: Predicting Customer_Satisfaction
-
-    # The target variable `Customer_Satisfaction` must be left unscaled
-    X_clf = data_final.drop("Customer_Satisfaction", axis=1)
-    y_clf = data_final["Customer_Satisfaction"].astype("category")
+    X_clf = data.drop("Customer_Satisfaction", axis=1)
+    y_clf = data["Customer_Satisfaction"].astype("category")
     print("Defined features and target for classification.")
 
-    # Scale numerical features (excluding the target)
+    # Scale numerical features
     scaler_clf = StandardScaler()
     X_clf_scaled = X_clf.copy()
     numeric_features_clf = X_clf.select_dtypes(include=np.number).columns.tolist()
-    X_clf_scaled[numeric_features_clf] = scaler_clf.fit_transform(
-        X_clf_scaled[numeric_features_clf]
-    )
+    X_clf_scaled[numeric_features_clf] = scaler_clf.fit_transform(X_clf_scaled[numeric_features_clf])
 
     # Split data
     X_train_clf, X_test_clf, y_train_clf, y_test_clf = train_test_split(
@@ -214,11 +191,12 @@ def classification_analysis(data: pd.DataFrame):
 
 
 if __name__ == "__main__": 
-    data = load_data()
+    file_path = "https://raw.githubusercontent.com/codeteme/IDS706_DE_Wk2/refs/heads/main/data/raw/Ecommerce_Consumer_Behavior_Analysis_Data.csv"
+    data = load_data(file_path)
     basic_data_analysis(data)
     data = clean_data(data)
-    string_cols = exploratory_data_analysis(data) #TODO Uncomment before submission
-    data_final = data_transformation_feature_engineering(data)
+    string_cols = exploratory_data_analysis(data)
+    data_final = data_transformation_feature_engineering(data, string_cols)
     regression_analysis(data_final)
     classification_analysis(data_final)
 
