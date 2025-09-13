@@ -1,0 +1,16 @@
+{
+    "name": "IDS706 Week 3 Dev Container",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "context": ".."
+    },
+    "workspaceFolder": "/app",
+    "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+    ],
+    "settings": {
+        "python.pythonPath": "/usr/local/bin/python"
+    },
+    "postCreateCommand": "pip install --no-cache-dir -r requirements.txt"
+}
