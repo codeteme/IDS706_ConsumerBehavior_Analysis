@@ -1,82 +1,123 @@
-# IDS706_DE_Wk2
+# IDS706_DE_Wk2 / Week 3 Submission
 
-# E-commerce Consumer Behavior Analysis
-## Project Overview
-This project is a comprehensive analysis of e-commerce consumer behavior data. It involves several key steps in the data science pipeline: loading and cleaning data, performing exploratory data analysis (EDA), and building and evaluating several machine learning models for both regression and classification tasks.
+## E-commerce Consumer Behavior Analysis
 
-The primary goals of this project are to understand the factors influencing consumer purchases and satisfaction, and to experiment with different machine learning algorithms to predict these behaviors.
+### Project Overview
+This project is a comprehensive analysis of e-commerce consumer behavior data. It involves several key steps in the data science pipeline: loading and cleaning data, performing exploratory data analysis (EDA), and building and evaluating machine learning models for regression and classification tasks.
+
+**Week 3 Goal:** Make the project **reproducible and testable** using Docker and/or Dev Container. Implement **unit tests** for core data analysis functions and ensure environment setup is consistent across systems.  
+
+---
 
 ## Dataset
-The analysis is based on the "Ecommerce_Consumer_Behavior_Analysis_Data.csv" dataset. This dataset contains information on e-commerce customers, including demographics, purchase history, and various behavioral metrics.
-
-## Getting Started
-To run this analysis, you will need to have Python and the following libraries installed. You can install them using pip:
+The analysis uses the dataset:
 
 ```
-pip install pandas numpy matplotlib seaborn scikit-learn xgboost
+
+data/raw/Ecommerce\_Consumer\_Behavior\_Analysis\_Data.csv
+
+````
+
+It contains demographics, purchase history, and behavioral metrics for e-commerce customers.  
+
+---
+
+## Previous Project Results
+- **Data Cleaning:** handled missing values, outliers, duplicates, and type conversions.  
+- **Data Transformation:** standardization and one-hot encoding for ML models.  
+- **EDA:** histograms, count plots, correlation heatmaps, and group analysis.  
+- **Machine Learning Models:**  
+  - Regression (`LinearRegression`, `XGBRegressor`) predicting `Purchase_Amount`.  
+  - Classification (`LogisticRegression`, `DecisionTreeClassifier`) predicting `Customer_Satisfaction`.  
+- **Findings:** Models struggled to accurately predict targets, suggesting complex relationships or additional features are needed.  
+
+---
+
+## Setup Instructions
+
+### Docker Image
+Build the Docker image with all dependencies:
+
+```bash
+docker build -t ids706_wk3 .
+````
+
+* Uses Python 3.10 and `requirements.txt`.
+* Isolated environment ensures reproducibility.
+
+---
+
+### Run Tests
+
+Run container to execute unit tests:
+
+```bash
+docker run --rm ids706_wk3
 ```
 
-You will also need to ensure the dataset is placed in the correct directory as specified in the code: 
-`../data/raw/Ecommerce_Consumer_Behavior_Analysis_Data.csv.`
+* Tests are located in `src/test_main.py`.
+* Command executed:
 
-## Analysis Steps
-### 1. Data Loading and Inspection
-The analysis begins by importing all necessary libraries, followed by loading the dataset into a pandas DataFrame. The `.head()`, `.info()`, and `.describe()` methods are used to get a quick overview of the data's structure, types, and summary statistics.
+```bash
+python -m unittest discover -s src
+```
 
-### 2. Data Cleaning and Preprocessing
-This crucial step prepares the data for modeling:
+* Screenshot of passing tests should be included for submission.
 
-* Outlier Detection: The code checks for outliers in numeric columns using the Z-score method.
+---
 
-* Missing Values: Null values in the `Social_Media_Influence` and `Engagement_with_Ads` columns are identified and filled using the mode of each column.
+## Dev Container Setup (VS Code)
 
-* Duplicates: The dataset is checked for any duplicate rows, of which none were found.
+1. **Folder structure**:
 
-* Data Type Conversion: The `Purchase_Amount` column is converted from a string to a float by removing the '$' symbol.
+```
+.devcontainer/
+├── devcontainer.json
+Dockerfile
+requirements.txt
+src/
+data/
+```
 
-* Data Transformation:
+2. **devcontainer.json**:
 
-* * Standardization: Key numeric features are scaled using `StandardScaler` to ensure they contribute equally to the models.
+```json
+{
+  "name": "IDS706 Week 3 Dev Container",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/app",
+  "extensions": [
+    "ms-python.python",
+    "ms-python.vscode-pylance"
+  ],
+  "settings": {
+    "python.pythonPath": "/usr/local/bin/python"
+  },
+  "postCreateCommand": "pip install --no-cache-dir -r requirements.txt"
+}
+```
 
-* * One-Hot Encoding: Categorical string columns are converted into a numerical format using one-hot encoding, a necessary step for most machine learning algorithms.
+3. **Open in VS Code:**
 
-### 3. Exploratory Data Analysis (EDA)
-Several visualizations and groupings were performed to understand the data better:
+* Install **Remote - Containers** extension.
+* Press `F1` → **Remote-Containers: Open Folder in Container** → select project folder.
+* Dependencies install automatically and workspace opens inside the container.
 
-* A histogram of `Age` and count plots for `Gender` and `Marital_Status` were created to understand the distribution of these demographic features.
+4. **Run Tests inside Dev Container:**
 
-* The average `Purchase_Amount` for different `Income_Level` groups was calculated.
+```bash
+python -m unittest discover -s src
+```
 
-* A correlation heatmap was generated to visualize the relationships between numeric variables.
+---
 
-### 4. Machine Learning Models
-Both regression and classification models were explored.
+## Figures
 
-**Regression Analysis (Predicting Purchase_Amount)**
-* Linear Regression: A `LinearRegression` model was trained to predict the `Purchase_Amount`. The resulting Mean Squared Error (MSE) and Root Mean Squared Error (RMSE) were quite high, suggesting that a simple linear model is not a good fit for this data. Feature importance was also plotted.
-* XGBoost Regressor: An `XGBRegressor` was used as a more complex alternative. The results showed a slightly higher error, indicating that even this advanced model struggled to capture the underlying patterns in the current feature set.
-
-**Classification Analysis (Predicting Customer_Satisfaction)**
-
-* Logistic Regression: The `Purchase_Amount` column was scaled, and `Customer_Satisfaction` was converted to a categorical target. A `LogisticRegression` model was trained to predict customer satisfaction. The model achieved a very low prediction accuracy score of about 7%.
-* Decision Tree Classifier: A `DecisionTreeClassifier` was also tested, which resulted in a slightly better but still low accuracy of about 14.5%.
-
-### Conclusion
-The analysis reveals that while the data was successfully cleaned and prepared, the selected features and initial models struggled to accurately predict both `Purchase_Amount` and `Customer_Satisfaction`. The low accuracy scores suggest that either the relationship between the features and the target variables is complex, or that additional data features are needed to improve model performance.
-
-=====
-
-#### Figures from python script
 ![Alt text for screen readers](assets/img001.png)
-========
-========
 ![Alt text for screen readers](assets/img002.png)
-========
-========
 ![Alt text for screen readers](assets/img003.png)
-========
-========
 ![Alt text for screen readers](assets/img004.png)
-========
-========
 ![Alt text for screen readers](assets/img005.png)
