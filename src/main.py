@@ -37,7 +37,7 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     assert data["Purchase_Amount"].dtype == "float64"
 
     z_scores = np.abs(stats.zscore(data.select_dtypes(include=np.number)))
-    print(f"There are a total of {data[(z_scores > 3).all(axis = 1)].shape[0]} outliers")
+    print(f"There are a total of {data[(z_scores > 3).any(axis = 1)].shape[0]} outliers")
     print(f"There are a total of {data.duplicated().sum()} duplicated row(s)")
 
     for col in data.columns:
@@ -144,7 +144,11 @@ def regression_analysis(data: pd.DataFrame):
     plt.ylabel("Feature Importance")
     # plt.show() # Uncomment to display figure
 
-    return
+    return {
+        "linear_regression": {"mse": mse_lin, "rmse": rmse_lin},
+        "xgboost_regression": {"mse": mse_xgb, "rmse": rmse_xgb},
+    }
+
 
 
 def classification_analysis(data: pd.DataFrame): 
@@ -165,10 +169,18 @@ def classification_analysis(data: pd.DataFrame):
     )
     print("Data split into training and testing sets for classification.")
 
+    results = {}
+
     # Logistic Regression
     logreg = LogisticRegression(max_iter=1000)
     logreg.fit(X_train_clf, y_train_clf)
     y_pred_clf_log = logreg.predict(X_test_clf)
+    results["logistic_regression"] = {
+        "accuracy": accuracy_score(y_test_clf, y_pred_clf_log),
+        "report": classification_report(y_test_clf, y_pred_clf_log, output_dict=True),
+        "confusion_matrix": confusion_matrix(y_test_clf, y_pred_clf_log).tolist(),
+    }
+
     acc_log = accuracy_score(y_test_clf, y_pred_clf_log)
     print("\nLogistic Regression:")
     print(f"Accuracy: {acc_log:.4f}")
@@ -188,6 +200,14 @@ def classification_analysis(data: pd.DataFrame):
     print(classification_report(y_test_clf, y_pred_clf_tree))
     print("Confusion Matrix:")
     print(confusion_matrix(y_test_clf, y_pred_clf_tree))
+
+    results["decision_tree"] = {
+        "accuracy": accuracy_score(y_test_clf, y_pred_clf_tree),
+        "report": classification_report(y_test_clf, y_pred_clf_tree, output_dict=True),
+        "confusion_matrix": confusion_matrix(y_test_clf, y_pred_clf_tree).tolist(),
+    }
+
+    return results
 
 
 if __name__ == "__main__": 

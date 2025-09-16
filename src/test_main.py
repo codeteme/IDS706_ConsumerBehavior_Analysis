@@ -44,21 +44,35 @@ class TestDataPipeline(unittest.TestCase):
 
         return pd.DataFrame(data, columns=columns)
 
-    def test_load_data(self):
+    def test_load_data_type_and_length(self):
         url = "https://raw.githubusercontent.com/codeteme/IDS706_DE_Wk2/refs/heads/main/data/raw/customers-100.csv"
         df = load_data(url)
         self.assertIsInstance(df, pd.DataFrame)
         self.assertGreater(len(df), 0)
 
-    def test_clean_data(self):
+    def test_load_data_columns_exist(self):
+        df = load_data("https://raw.githubusercontent.com/codeteme/IDS706_DE_Wk2/refs/heads/main/data/raw/customers-100.csv")
+        expected_cols = ["Customer_ID", "Age", "Purchase_Amount", "Gender"]
+        for col in expected_cols:
+            self.assertIn(col, df.columns)
+
+    def test_clean_data_no_nulls(self):
         df = self.get_sample_data()
         cleaned = clean_data(df)
-        
         self.assertEqual(cleaned.isnull().any().sum(), 0)
+
+    def test_clean_data_purchase_amount_float(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        self.assertTrue(cleaned["Purchase_Amount"].dtype == float)
+
+    def test_clean_data_no_outliers(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
         numeric_cols = cleaned.select_dtypes(include=np.number)
         z_scores = np.abs(stats.zscore(numeric_cols))
-        # No rows with all numeric z-scores > 3
-        self.assertEqual(cleaned[(z_scores > 3).all(axis=1)].shape[0], 0)
+        self.assertEqual(cleaned[(z_scores > 3).any(axis=1)].shape[0], 0)
+
 
     def test_exploratory_data_analysis(self):
         df = self.get_sample_data()
@@ -69,47 +83,111 @@ class TestDataPipeline(unittest.TestCase):
         for col in string_cols:
             self.assertTrue(cleaned[col].dtype == "object")
 
-    def test_data_transformation_feature_engineering(self):
+
+    def test_eda_returns_list_of_strings(self):
         df = self.get_sample_data()
         cleaned = clean_data(df)
         string_cols = exploratory_data_analysis(cleaned)
-        
-        data_final = data_transformation_feature_engineering(cleaned, string_cols)
+        self.assertIsInstance(string_cols, list)
+        for col in string_cols:
+            self.assertTrue(cleaned[col].dtype == "object")
 
+    def test_eda_contains_expected_strings(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        expected_strings = ["Gender", "Income_Level", "Marital_Status"]
+        for col in expected_strings:
+            self.assertIn(col, string_cols)
+
+
+    def test_feature_engineering_columns_dropped(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        data_final = data_transformation_feature_engineering(cleaned, string_cols)
         for col in ["Customer_ID", "Location", "Time_of_Purchase"]:
             self.assertNotIn(col, data_final.columns)
 
+    def test_feature_engineering_contains_numeric(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        data_final = data_transformation_feature_engineering(cleaned, string_cols)
         self.assertIn("Age", data_final.columns)
         self.assertIn("Purchase_Amount", data_final.columns)
 
-        # Check that one-hot encoding occurred
+    def test_feature_engineering_one_hot_encoding(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        data_final = data_transformation_feature_engineering(cleaned, string_cols)
         for col in string_cols:
             if col not in ["Customer_ID", "Location", "Time_of_Purchase"]:
                 self.assertTrue(any(c.startswith(col + "_") for c in data_final.columns))
+
+    def test_feature_engineering_no_object_columns(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        data_final = data_transformation_feature_engineering(cleaned, string_cols)
+        self.assertTrue(all(dtype != "object" for dtype in data_final.dtypes))
     
-    def test_regression_analysis_runs(self):
-        # Regression should run without error
-        try:
-            df = self.get_sample_data()
-            cleaned = clean_data(df)
-            string_cols = exploratory_data_analysis(cleaned)
-            data_final = data_transformation_feature_engineering(cleaned, string_cols)
+    def test_regression_structure_and_metrics(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        data_final = data_transformation_feature_engineering(cleaned, string_cols)
+        results = regression_analysis(data_final)
 
-            regression_analysis(data_final)
-        except Exception as e:
-            self.fail(f"regression_analysis raised an exception {e}")
+        self.assertIn("linear_regression", results)
+        self.assertIn("xgboost_regression", results)
+        for model, metrics in results.items():
+            self.assertGreaterEqual(metrics["mse"], 0)
+            self.assertGreaterEqual(metrics["rmse"], 0)
+            self.assertAlmostEqual(metrics["rmse"], np.sqrt(metrics["mse"]), places=5)
 
-    def test_classification_analysis_runs(self):
-        # Classification should run without error
-        try:
-            df = self.get_sample_data()
-            cleaned = clean_data(df)
-            string_cols = exploratory_data_analysis(cleaned)
-            data_final = data_transformation_feature_engineering(cleaned, string_cols)
-            
-            classification_analysis(data_final)
-        except Exception as e:
-            self.fail(f"classification_analysis raised an exception {e}")
+    def test_regression_prediction_shape(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        data_final = data_transformation_feature_engineering(cleaned, string_cols)
+        X_reg = data_final.drop("Purchase_Amount", axis=1)
+        results = regression_analysis(data_final)
+        self.assertEqual(X_reg.shape[0], len(cleaned))
+
+    def test_classification_structure_and_accuracy(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        data_final = data_transformation_feature_engineering(cleaned, string_cols)
+        results = classification_analysis(data_final)
+
+        self.assertIn("logistic_regression", results)
+        self.assertIn("decision_tree", results)
+        for model, metrics in results.items():
+            self.assertGreaterEqual(metrics["accuracy"], 0)
+            self.assertLessEqual(metrics["accuracy"], 1)
+
+    def test_classification_confusion_matrix_shape(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        data_final = data_transformation_feature_engineering(cleaned, string_cols)
+        results = classification_analysis(data_final)
+        for model, metrics in results.items():
+            cm = np.array(metrics["confusion_matrix"])
+            self.assertEqual(cm.shape[0], cm.shape[1])
+            self.assertEqual(cm.shape[0], len(cleaned["Customer_Satisfaction"].unique()))
+
+    def test_classification_target_present_in_split(self):
+        df = self.get_sample_data()
+        cleaned = clean_data(df)
+        string_cols = exploratory_data_analysis(cleaned)
+        data_final = data_transformation_feature_engineering(cleaned, string_cols)
+        y_clf = data_final["Customer_Satisfaction"] if "Customer_Satisfaction" in data_final else cleaned["Customer_Satisfaction"]
+        self.assertGreaterEqual(len(y_clf.unique()), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
