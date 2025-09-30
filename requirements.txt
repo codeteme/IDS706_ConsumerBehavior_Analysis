@@ -5,3 +5,4 @@ matplotlib
 seaborn
 xgboost
 pytest
+flake8
