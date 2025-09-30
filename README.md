@@ -62,6 +62,10 @@ python -m unittest discover -s src
 ```
 
 * Screenshot of passing tests should be included for submission.
+![Tests Passed Succesfully](images/test_passed_ss.png)
+
+* Screenshot of successful built docker image
+![Docker Images Build](images/docker_ss.png)
 
 ---
 
