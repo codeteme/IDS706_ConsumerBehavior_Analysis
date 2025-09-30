@@ -1,5 +1,7 @@
 # IDS706_DE_Wk2 / Week 3 Submission
 
+[![Python CI](https://github.com/codeteme/IDS706_DE_Wk2/actions/workflows/main.yml/badge.svg)](https://github.com/codeteme/IDS706_DE_Wk2/actions/workflows/main.yml)
+
 ## E-commerce Consumer Behavior Analysis
 
 ### Project Overview
