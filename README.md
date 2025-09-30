@@ -1,4 +1,4 @@
-# IDS706_DE_Wk2 / Week 4 Submission
+# IDS706_ConsumerBehavior_Analysis
 
 [![Python CI](https://github.com/codeteme/IDS706_DE_Wk2/actions/workflows/main.yml/badge.svg)](https://github.com/codeteme/IDS706_DE_Wk2/actions/workflows/main.yml)
 
