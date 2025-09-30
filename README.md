@@ -38,7 +38,7 @@ Key Columns:
 Build the Docker image with all dependencies:
 
 ```bash
-docker build -t ids706_wk3 .
+docker build -t consumer-behavior-tests:latest .
 ````
 
 * Uses Python 3.10 and `requirements.txt`.
