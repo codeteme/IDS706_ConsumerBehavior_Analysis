@@ -80,7 +80,7 @@ def plot_hist(data, col, bins=50, save_name=None):
     plt.ylabel("Frequency")
     if save_name:
         save_fig(save_name)
-    plt.show()
+    # plt.show() # Uncomment to see figure
 
 
 def plot_boxgrid(data, cols, n_cols=3, save_name=None):
@@ -94,7 +94,7 @@ def plot_boxgrid(data, cols, n_cols=3, save_name=None):
     plt.tight_layout()
     if save_name:
         save_fig(save_name)
-    plt.show()
+    # plt.show() # Uncomment to see figure
 
 
 def plot_countgrid(data, cols, n_cols=4, save_name=None):
@@ -120,7 +120,7 @@ def plot_corr_heatmap(data, numerical_cols, save_name=None):
     plt.tight_layout()
     if save_name:
         save_fig(save_name)
-    plt.show()
+    # plt.show() # Uncomment to see figure
 
 
 def feature_engineering(data: pd.DataFrame) -> pd.DataFrame:
@@ -200,7 +200,7 @@ def regression_analysis(data: pd.DataFrame):
     plt.tight_layout()
 
     save_fig("Top 10 Most Influential Features in Linear Regression")
-    plt.show()
+    # plt.show() # Uncomment to see figure
 
     # XGBoost Regression
     xgbreg = XGBRegressor(n_estimators=200, learning_rate=0.1, random_state=42)
@@ -231,7 +231,7 @@ def regression_analysis(data: pd.DataFrame):
     plot_importance(xgbreg, max_num_features=10, importance_type="weight")
     plt.title("Top 10 Feature Importance - XGBoost", fontsize=14)
     save_fig("Top 10 Feature Importance - XGBoost", tight_layout=False)
-    plt.show()
+    # plt.show() # Uncomment to see figure
 
 
 def classification_analysis(data: pd.DataFrame):
