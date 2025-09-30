@@ -1,4 +1,4 @@
-# IDS706_DE_Wk2 / Week 3 Submission
+# IDS706_DE_Wk2 / Week 4 Submission
 
 [![Python CI](https://github.com/codeteme/IDS706_DE_Wk2/actions/workflows/main.yml/badge.svg)](https://github.com/codeteme/IDS706_DE_Wk2/actions/workflows/main.yml)
 
@@ -113,11 +113,29 @@ python -m unittest discover -s src
 
 ---
 
-## Figures
+## Figures and Insights
+1. Purchase Amount Distribution:
+![Histogram of Purchase Amounts](images/classification/Purchase_Amount_Hist.png)  
+Shows the distribution of customer spending. Most purchases are distributed throughout the range.
 
-![Alt text for screen readers](images/classification/Categorical_Countplots.png)
-![Alt text for screen readers](images/classification/Correlation_Heatmap.png)
-![Alt text for screen readers](images/classification/Numerical_Boxplots.png)
-![Alt text for screen readers](images/classification/Purchase_Amount_Hist.png)
-![Alt text for screen readers](images/classification/Top 10 Feature Importance - XGBoost.png)
-![Alt text for screen readers](images/classification/Top 10 Most Influential Features in Linear Regression png)
+2. Numerical Features Boxplots:
+![Boxplots of numerical features](images/classification/Numerical_Boxplots.png)  
+Highlights the spread and potential outliers in numerical features such as `Age` and `Visits_Per_Month`.
+
+3. Categorical Features Countplots:
+![Countplots of categorical features](images/classification/Categorical_Countplots.png)  
+Visualizes customer segments across gender, income levels, purchase channels, and more.
+
+4. Correlation Heatmap:
+![Heatmap of correlations among numerical features](images/classification/Correlation_Heatmap.png)  
+Identifies relationships among numeric variables, e.g., how `Frequency_of_Purchase` correlates with `Purchase_Amount`.
+
+5. Top 10 Most Influential Features – Linear Regression:
+![Linear Regression Feature Importance](images/classification/Top%2010%20Most%20Influential%20Features%20in%20Linear%20Regression.png)
+Shows which features have the largest coefficients and impact purchase predictions.
+
+6. Top 10 Feature Importance – XGBoost:
+![XGBoost Feature Importance](images/classification/Top%2010%20Feature%20Importance%20-%20XGBoost.png)
+Reveals which features most influence purchase amounts in the XGBoost model.
+
+
